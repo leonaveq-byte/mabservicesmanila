@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Malabanan Services – Customer Portal (Prototype)</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f4f2;--card:#fff;--ink:#241716;--mut:#6d605e;--red:#b83230;--redd:#8f2422;--line:#e6dfdc;--ok:#1f7a45;--warn:#b7791f;--tint:#fbeceb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1211;--card:#251a19;--ink:#f5eceb;--mut:#b3a3a1;--line:#3a2b29;--tint:#3a1d1c;--red:#e0605d}}
+:root[data-theme="dark"]{--bg:#1a1211;--card:#251a19;--ink:#f5eceb;--mut:#b3a3a1;--line:#3a2b29;--tint:#3a1d1c;--red:#e0605d}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif}
+header{background:#b83230;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+header b{font-size:18px;font-weight:800}header span{font-size:13px;opacity:.85;display:block;font-weight:400}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:26px;line-height:1.15;margin:8px 0}h2{font-size:19px;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.perk{background:var(--tint);border-color:var(--red)}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+input,select,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--red);color:#fff;border:0;border-radius:10px;padding:13px 18px;font-weight:700;width:100%;margin-top:14px}
+.btn.alt{background:transparent;color:var(--red);border:1.5px solid var(--red)}
+.btn.sm{width:auto;padding:8px 12px;margin:0;font-size:14px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+nav{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px}
+nav button{flex:1;white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 12px;border-radius:999px;font-weight:600}
+nav button.on{background:var(--red);color:#fff;border-color:var(--red)}
+.opt{display:flex;justify-content:space-between;gap:10px;border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;background:var(--card);width:100%;text-align:left;color:var(--ink)}
+.opt.on{border-color:var(--red);background:var(--tint)}.opt small{color:var(--mut);display:block}
+.free{color:var(--ok);font-weight:800}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal .h{font-size:12px;color:var(--mut)}.cal button{aspect-ratio:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px}
+.cal button:disabled{opacity:.3}.cal button.on{background:var(--red);color:#fff;border-color:var(--red)}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.slots button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px;border-radius:999px}.slots button.on{background:var(--red);color:#fff}
+.row{display:flex;justify-content:space-between;gap:10px;padding:6px 0}.tot{border-top:2px solid var(--ink);margin-top:6px;padding-top:10px;font-weight:800;font-size:19px}
+.chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:700}
+.ok{background:#dff3e6;color:#175c34}.warn{background:#fdecc8;color:#7a4e0c}.bad{background:#fbd9d8;color:#8f2422}.idle{background:var(--line);color:var(--mut)}
+.mut{color:var(--mut);font-size:14px}.stars button{background:none;border:0;font-size:30px;color:#c9bdbb;padding:0 2px}.stars button.on{color:#e0a100}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:14px;border-radius:12px;text-align:center;z-index:9}
+.hide{display:none}
+</style></head><body>
+<header><div><b>Belen Malabanan Services</b><span>Customer portal · prototype</span></div><button id="out" class="btn sm hide" style="background:#fff;color:#b83230">Log out</button></header>
+<main id="app"></main>
+<script>
+const SERVICES={
+ inspect:{n:'Septic tank inspection',d:'Check of tank condition, sludge level and leaks',p:1500,every:365},
+ siphon:{n:'Septic tank siphoning',d:'Full desludging, priced by tank size',p:null,every:1095},
+ declog:{n:'Drain declogging',d:'Kitchen, bathroom or main line',p:2500,every:null},
+ grease:{n:'Grease trap cleaning',d:'For restaurants and food businesses',p:3000,every:90}};
+const SIZES={s:{n:'Small (up to 3 m³)',p:3500},m:{n:'Medium (up to 6 m³)',p:4500},l:{n:'Large (up to 10 m³)',p:6500}};
+const SLOTS=['8:00 AM','10:00 AM','1:00 PM','3:00 PM'];
+const peso=n=>'₱'+n.toLocaleString('en-PH');
+let mem={};
+const store={get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return mem[k]||null}},
+ set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){mem[k]=v}}};
+let S={user:store.get('mb_user'),bookings:store.get('mb_book')||[],reviews:store.get('mb_rev')||[
+ {who:'Maria L.',stars:5,text:'On time, clean work, and the price was exactly what was quoted.'},
+ {who:'Ramon D.',stars:5,text:'Booked online in two minutes. Got a reminder before the next schedule.'}],
+ tab:'book',svc:'inspect',size:'m',date:null,slot:null,addr:'',cm:new Date(),stars:5};
+const save=()=>{store.set('mb_user',S.user);store.set('mb_book',S.bookings);store.set('mb_rev',S.reviews)};
+const $=s=>document.querySelector(s),app=$('#app');
+function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),2600)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fd=d=>new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+
+function quote(){
+ const sv=SERVICES[S.svc];let base=S.svc==='siphon'?SIZES[S.size].p:sv.p,lines=[[sv.n+(S.svc==='siphon'?' – '+SIZES[S.size].n:''),base]],total=base;
+ const perk=S.user&&!S.user.perkUsed;
+ if(perk&&S.svc==='inspect'){lines.push(['Welcome perk: free inspection',-base]);total=0}
+ if(perk&&S.svc==='siphon'){const d=Math.round(base*.1);lines.push(['Welcome perk: 10% off',-d]);total-=d}
+ return{lines,total}}
+
+function render(){
+ $('#out').classList.toggle('hide',!S.user);
+ if(!S.user)return register();
+ app.innerHTML=`<h1>Hello, ${esc(S.user.name.split(' ')[0])}</h1>
+ ${!S.user.perkUsed?'<div class="card perk"><b>Your welcome perks are ready</b><div class="mut">Free septic tank inspection and 10% off siphoning on your first booking.</div></div>':''}
+ <nav>${[['book','Book'],['track','My services'],['rev','Reviews'],['acc','Account']].map(([k,l])=>`<button class="${S.tab===k?'on':''}" data-t="${k}">${l}</button>`).join('')}</nav><div id="v"></div>`;
+ app.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;render()});
+ ({book,track,rev,acc})[S.tab]();}
+
+function register(){
+ app.innerHTML=`<h1>Create your account</h1><p class="mut">Book septic services, see your price upfront, and keep track of every service.</p>
+ <div class="card perk"><b>New accounts get</b><div>Free septic tank inspection<br>10% off siphoning on your first booking</div></div>
+ <div class="card"><label>Full name</label><input id="n" autocomplete="name"><label>Contact number</label><input id="p" type="tel" autocomplete="tel"><label>Email</label><input id="e" type="email" autocomplete="email">
+ <label>How did you hear about us?</label><select id="h"><option>Facebook</option><option>Referral</option><option>Google search</option><option>Other</option></select>
+ <div id="err" class="mut" style="color:var(--red)"></div><button class="btn" id="go">Create account</button></div>`;
+ $('#go').onclick=()=>{const n=$('#n').value.trim(),p=$('#p').value.trim(),e=$('#e').value.trim();
+  if(!n||!/^[0-9+\s()-]{7,}$/.test(p)||!/\S+@\S+\.\S+/.test(e)){$('#err').textContent='Enter your name, a valid contact number and a valid email.';return}
+  S.user={name:n,phone:p,email:e,perkUsed:false,remind:true};save();render()}}
+
+function book(){
+ const q=quote(),y=S.cm.getFullYear(),m=S.cm.getMonth(),first=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate(),today=new Date();today.setHours(0,0,0,0);
+ let cells='';for(let i=0;i<first;i++)cells+='<span></span>';
+ for(let d=1;d<=dim;d++){const dt=new Date(y,m,d),iso=dt.toISOString().slice(0,10),off=dt<=today||dt.getDay()===0;
+  cells+=`<button ${off?'disabled':''} class="${S.date===iso?'on':''}" data-d="${iso}">${d}</button>`}
+ $('#v').innerHTML=`<div class="card"><h2>1. Choose a service</h2>${Object.entries(SERVICES).map(([k,v])=>`<button class="opt ${S.svc===k?'on':''}" data-s="${k}"><span><b>${v.n}</b><small>${v.d}</small></span><span>${k==='siphon'?'by size':(S.user.perkUsed||k!=='inspect'?peso(v.p):'<span class=free>FREE</span>')}</span></button>`).join('')}
+ ${S.svc==='siphon'?`<label>Tank size</label><select id="sz">${Object.entries(SIZES).map(([k,v])=>`<option value="${k}" ${S.size===k?'selected':''}>${v.n} – ${peso(v.p)}</option>`).join('')}</select>`:''}</div>
+ <div class="card"><h2>2. Pick a date and time</h2><div class="row"><button class="btn alt sm" id="pv">‹</button><b>${S.cm.toLocaleDateString('en-PH',{month:'long',year:'numeric'})}</b><button class="btn alt sm" id="nx">›</button></div>
+ <div class="cal">${'SMTWTFS'.split('').map(d=>`<span class="h">${d}</span>`).join('')}${cells}</div>
+ <div class="slots">${SLOTS.map(s=>`<button class="${S.slot===s?'on':''}" data-sl="${s}">${s}</button>`).join('')}</div><div class="mut" style="margin-top:8px">Closed Sundays.</div></div>
+ <div class="card"><h2>3. Service address</h2><input id="ad" placeholder="House no., street, barangay, city" value="${esc(S.addr)}"></div>
+ <div class="card"><h2>Your quotation</h2>${q.lines.map(([l,a])=>`<div class="row"><span>${esc(l)}</span><span class="${a<0?'free':''}">${a<0?'−':''}${peso(Math.abs(a))}</span></div>`).join('')}
+ <div class="row mut"><span>Other fees</span><span>None</span></div><div class="row tot"><span>Total</span><span>${peso(q.total)}</span></div>
+ <button class="btn" id="bk" ${S.date&&S.slot?'':'disabled'}>Confirm booking</button></div>`;
+ document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{S.svc=b.dataset.s;book()});
+ document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{S.date=b.dataset.d;S.addr=$('#ad').value;book()});
+ document.querySelectorAll('[data-sl]').forEach(b=>b.onclick=()=>{S.slot=b.dataset.sl;S.addr=$('#ad').value;book()});
+ const sz=$('#sz');if(sz)sz.onchange=()=>{S.size=sz.value;S.addr=$('#ad').value;book()};
+ $('#pv').onclick=()=>{S.cm=new Date(y,m-1,1);book()};$('#nx').onclick=()=>{S.cm=new Date(y,m+1,1);book()};
+ $('#bk').onclick=()=>{S.addr=$('#ad').value.trim();if(!S.addr){toast('Add your service address first');return}
+  S.bookings.unshift({id:Date.now(),svc:S.svc,label:q.lines[0][0],date:S.date,slot:S.slot,total:q.total,addr:S.addr,status:'scheduled'});
+  if(S.svc==='inspect'||S.svc==='siphon')S.user.perkUsed=true;
+  S.date=S.slot=null;save();S.tab='track';toast('Booked. We will confirm by SMS.');render()}}
+
+function due(k){const v=SERVICES[k];if(!v.every)return null;
+ const done=S.bookings.filter(b=>b.svc===k&&b.status==='done').sort((a,b)=>b.date.localeCompare(a.date))[0];
+ if(!done)return{last:null,chip:['idle','No record yet']};
+ const nd=new Date(new Date(done.date).getTime()+v.every*864e5),days=Math.round((nd-new Date())/864e5);
+ return{last:done.date,next:nd,chip:days<0?['bad','Overdue by '+(-days)+' days']:days<=30?['warn','Due in '+days+' days']:['ok','Next: '+fd(nd)]}}
+
+function track(){
+ const up=S.bookings.filter(b=>b.status==='scheduled'),dn=S.bookings.filter(b=>b.status==='done');
+ $('#v').innerHTML=`<div class="card"><h2>Service tracker</h2>${['inspect','siphon','grease'].map(k=>{const d=due(k);return`<div class="row" style="border-bottom:1px solid var(--line)"><span><b>${SERVICES[k].n}</b><div class="mut">Last: ${d.last?fd(d.last):'not recorded'}</div></span><span class="chip ${d.chip[0]}">${d.chip[1]}</span></div>`}).join('')}
+ <button class="btn alt" id="lg">Log a past service</button><div id="lgf"></div></div>
+ <div class="card"><h2>Upcoming</h2>${up.length?up.map(b=>`<div class="row"><span><b>${esc(b.label)}</b><div class="mut">${fd(b.date)}, ${b.slot}<br>${esc(b.addr)}</div></span><span><b>${peso(b.total)}</b><br><button class="btn alt sm" data-x="${b.id}">Done</button></span></div>`).join('')+'<div class="mut">“Done” is a demo shortcut. In the real site, staff mark jobs complete.</div>':'<div class="mut">Nothing scheduled. Book a service to get started.</div>'}</div>
+ <div class="card"><h2>History</h2>${dn.length?dn.map(b=>`<div class="row"><span><b>${esc(b.label)}</b><div class="mut">${fd(b.date)}</div></span><b>${peso(b.total)}</b></div>`).join(''):'<div class="mut">Completed services will show here.</div>'}</div>`;
+ document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{const bk=S.bookings.find(x=>x.id==b.dataset.x);bk.status='done';save();toast('Marked done. Tracker updated.');track()});
+ $('#lg').onclick=()=>{$('#lgf').innerHTML=`<label>Service</label><select id="ls">${Object.entries(SERVICES).map(([k,v])=>`<option value="${k}">${v.n}</option>`).join('')}</select><label>Date done</label><input id="ld" type="date" max="${new Date().toISOString().slice(0,10)}"><button class="btn" id="ls2">Save record</button>`;
+  $('#ls2').onclick=()=>{const d=$('#ld').value;if(!d){toast('Pick the date');return}const k=$('#ls').value;S.bookings.push({id:Date.now(),svc:k,label:SERVICES[k].n+' (self-logged)',date:d,slot:'',total:0,addr:'',status:'done'});save();track()}}}
+
+function rev(){
+ $('#v').innerHTML=`<div class="card"><h2>Leave a review</h2><div class="stars">${[1,2,3,4,5].map(i=>`<button class="${i<=S.stars?'on':''}" data-r="${i}" aria-label="${i} stars">★</button>`).join('')}</div><textarea id="rt" rows="3" placeholder="How was the service?"></textarea><button class="btn" id="rs">Post review</button></div>
+ <div class="card"><h2>Client reviews</h2>${S.reviews.map(r=>`<div style="margin-bottom:12px"><b>${esc(r.who)}</b> <span style="color:#e0a100">${'★'.repeat(r.stars)}</span><div>${esc(r.text)}</div></div>`).join('')}<div class="mut">Sample reviews for the prototype.</div></div>`;
+ document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.stars=+b.dataset.r;const t=$('#rt').value;rev();$('#rt').value=t});
+ $('#rs').onclick=()=>{const t=$('#rt').value.trim();if(!t){toast('Write a short review first');return}S.reviews.unshift({who:S.user.name.split(' ')[0]+' '+(S.user.name.split(' ')[1]||'')[0]+'.',stars:S.stars,text:t});save();toast('Review posted');rev()}}
+
+function acc(){
+ $('#v').innerHTML=`<div class="card"><h2>Account</h2><div class="row"><span class="mut">Name</span><span>${esc(S.user.name)}</span></div><div class="row"><span class="mut">Phone</span><span>${esc(S.user.phone)}</span></div><div class="row"><span class="mut">Email</span><span>${esc(S.user.email)}</span></div>
+ <label style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="rm" style="width:auto" ${S.user.remind?'checked':''}> Remind me by SMS and email when a service is due</label></div>
+ <div class="card"><h2>Contact Malabanan</h2><div class="mut">(02) 8531 9179 · 0920 908 6869<br>info@malabananservices.ph</div></div>`;
+ $('#rm').onchange=e=>{S.user.remind=e.target.checked;save()}}
+$('#out').onclick=()=>{S.user=null;S.tab='book';render()};
+render();
+</script></body></html>
